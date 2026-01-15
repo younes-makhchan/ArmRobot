@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arm Robot</title>
+    <link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+
+    <!-- Serial Connection UI -->
+    <div id="serialUI" style="position: absolute; top: 50px; left: 10px; z-index: 100;">
+        <button id="connectButton" style="padding: 8px 16px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">Connect Serial</button>
+        <div id="connectionStatus" style="margin-top: 5px; color: white; font-family: Arial, sans-serif; font-size: 12px;">Not Connected</div>
+    </div>
+
+    <!-- Joint Angles Display -->
+    <div id="anglesDisplay" style="position: absolute; top: 10px; right: 10px; z-index: 100; background: rgba(0, 0, 0, 0.7); color: white; padding: 10px; border-radius: 5px; font-family: Arial, sans-serif; font-size: 14px;">
+        <div><b>Robot Joint Angles:</b></div>
+        <div>Base: <span id="baseAngle">0</span>°</div>
+        <div>Shoulder: <span id="shoulderAngle">0</span>°</div>
+        <div>Elbow: <span id="elbowAngle">0</span>°</div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script src="main.js"></script>
+
+</body>
+</html>

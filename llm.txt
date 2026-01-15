@@ -1,0 +1,32 @@
+# Arm Robot Project Rules
+
+## Coordinate System Rules
+- Camera is positioned along Y-axis at (0, 10, 0) looking down at X-Z plane
+- Everything must stay at y = 0 (ground level)
+- No vertical movement in Y-direction
+- All objects operate in X-Z plane only
+
+## Browser/Three.js Specific Rules
+- Z-axis is reversed in browser: negative Z goes backward/away from camera, positive Z comes forward/toward camera
+- Pay attention to Z-axis direction when implementing movement
+- Use raycasting for precise mouse interaction on y=0 plane
+
+## Robot Arm Rules
+- Robot base at origin (0, 0, 0)
+- Horizontal planar design - arm extends in X-Z plane
+- White boxes for robot segments
+- Green connecting lines between segments
+- Base rotates around Y-axis
+- Middle and top sections extend/retract horizontally
+
+## Controls
+- A/D: Rotate base left/right
+- W/S: Extend/retract middle section
+- Q/E: Extend/retract top section
+- Mouse: Drag red sphere on grid
+
+## Code Quality Rules
+- Verify all mathematical formulas are correct
+- Check variable names don't conflict with reserved words
+- Test all functionality before finalizing
+- Ensure proper initialization of all objects
