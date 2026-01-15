@@ -1,4 +1,4 @@
-// Initialize Three.js scene
+// Initialize Three.js scene with enhanced visuals
 const scene = new THREE.Scene();
 
 // Camera positioned along z-axis, looking towards x-y plane
@@ -6,40 +6,128 @@ const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerH
 camera.position.set(0, 0, 10); // Along z-axis, looking down at XY plane
 camera.lookAt(0, 0, 0); // Looking at origin (x-y plane)
 
-// Renderer
-const renderer = new THREE.WebGLRenderer();
+// Enhanced Renderer with better quality
+const renderer = new THREE.WebGLRenderer({
+    antialias: true,
+    alpha: false,
+    powerPreference: "high-performance"
+});
 renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setClearColor(0x0a0a0a, 1); // Dark background
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 document.body.appendChild(renderer.domElement);
 
-// Grid helper (blue grid)
-const gridHelper = new THREE.GridHelper(20, 20, 0x0000ff, 0x0000ff);
+// --- BLOOM POST-PROCESSING SETUP ---
+const composer = new THREE.EffectComposer(renderer);
+
+// Render pass
+const renderPass = new THREE.RenderPass(scene, camera);
+composer.addPass(renderPass);
+
+// Bloom pass
+const bloomPass = new THREE.UnrealBloomPass(
+    new THREE.Vector2(window.innerWidth, window.innerHeight),
+    1.5,    // strength
+    0.4,    // radius
+    0.85    // threshold
+);
+composer.addPass(bloomPass);
+
+// Advanced Lighting Setup
+const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
+scene.add(ambientLight);
+
+const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+directionalLight.position.set(10, 10, 5);
+directionalLight.castShadow = true;
+directionalLight.shadow.mapSize.width = 2048;
+directionalLight.shadow.mapSize.height = 2048;
+scene.add(directionalLight);
+
+// Point light for dramatic effect
+const pointLight = new THREE.PointLight(0x00ffff, 0.5, 100);
+pointLight.position.set(0, 5, 0);
+scene.add(pointLight);
+
+// Enhanced Grid with glow effect
+const gridHelper = new THREE.GridHelper(25, 25, 0x00ffff, 0x004444);
+gridHelper.position.y = -0.01; // Slightly below to avoid z-fighting
 scene.add(gridHelper);
 
-// Axes helper with colors
-const axesHelper = new THREE.AxesHelper(5);
+// Enhanced axes helper
+const axesHelper = new THREE.AxesHelper(6);
 scene.add(axesHelper);
 
-// Red sphere - positioned in XY plane (z=0)
+// Enhanced Glowing Sphere - positioned in XY plane (z=0)
 const sphereGeometry = new THREE.SphereGeometry(0.5, 32, 32);
-const sphereMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+const sphereMaterial = new THREE.MeshPhongMaterial({
+    color: 0xff0040,
+    emissive: 0x880022, // Even stronger emissive for more bloom
+    specular: 0xffffff,
+    shininess: 100,
+    transparent: false, // Fully opaque
+    opacity: 1.0
+});
+
+// Add enhanced glow effect to sphere
+const sphereGlowGeometry = new THREE.SphereGeometry(0.65, 32, 32); // Larger glow radius
+const sphereGlowMaterial = new THREE.MeshBasicMaterial({
+    color: 0xff3366, // Slightly different glow color
+    transparent: true,
+    opacity: 0.4 // More visible glow
+});
+const sphereGlow = new THREE.Mesh(sphereGlowGeometry, sphereGlowMaterial);
+scene.add(sphereGlow);
+
 const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
 sphere.position.set(4, 4, 0); // Position at x=4, y=4, z=0 (XY plane)
+sphere.castShadow = true;
 scene.add(sphere);
+
+// Update glow position to follow sphere
+function updateSphereGlow() {
+    sphereGlow.position.copy(sphere.position);
+}
 
 // --- Physical lengths for IK ---
 const L1 = 3.0;
 const L2 = 3.0;
 
-// --- Robot Hierarchy (Strictly XY Plane, Z=0) ---
-const whiteMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
-const lineMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
+// --- Enhanced Robot Materials ---
+const robotMaterial = new THREE.MeshPhongMaterial({
+    color: 0x0088ff,
+    emissive: 0x002244,
+    specular: 0x444444,
+    shininess: 30,
+    transparent: false
+});
+
+const jointMaterial = new THREE.MeshPhongMaterial({
+    color: 0xffaa00,
+    emissive: 0x442200,
+    specular: 0x666666,
+    shininess: 50
+});
+
+const lineMaterial = new THREE.MeshBasicMaterial({
+    color: 0x00ff88,
+    transparent: true,
+    opacity: 0.8
+});
 
 // Shoulder Joint (at Origin)
 const shoulderJoint = new THREE.Group();
 scene.add(shoulderJoint);
 
-const arm1Mesh = new THREE.Mesh(new THREE.BoxGeometry(L1, 0.4, 0.1), whiteMaterial);
+// Base joint (golden)
+const baseJoint = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.2), jointMaterial);
+baseJoint.position.z = 0.1; // Slightly above ground
+shoulderJoint.add(baseJoint);
+
+const arm1Mesh = new THREE.Mesh(new THREE.BoxGeometry(L1, 0.4, 0.1), robotMaterial);
 arm1Mesh.position.x = L1 / 2; // Shift mesh so pivot is at the left edge
+arm1Mesh.castShadow = true;
 shoulderJoint.add(arm1Mesh);
 
 // Elbow Joint (at end of Arm 1)
@@ -47,9 +135,21 @@ const elbowJoint = new THREE.Group();
 elbowJoint.position.x = L1;
 shoulderJoint.add(elbowJoint);
 
-const arm2Mesh = new THREE.Mesh(new THREE.BoxGeometry(L2, 0.3, 0.1), whiteMaterial);
+// Elbow joint (golden)
+const elbowJointMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.25, 0.15), jointMaterial);
+elbowJointMesh.position.z = 0.075;
+elbowJoint.add(elbowJointMesh);
+
+const arm2Mesh = new THREE.Mesh(new THREE.BoxGeometry(L2, 0.3, 0.1), robotMaterial);
 arm2Mesh.position.x = L2 / 2; // Shift mesh so pivot is at the left edge
+arm2Mesh.castShadow = true;
 elbowJoint.add(arm2Mesh);
+
+// End effector (gripping tool)
+const endEffector = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.2, 0.4), jointMaterial);
+endEffector.position.x = L2;
+endEffector.position.z = 0.1;
+elbowJoint.add(endEffector);
 
 // --- Connecting Lines (Visual Bones) ---
 const line1 = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, L1), lineMaterial);
@@ -282,15 +382,22 @@ function animate(time) {
         lastSendTime = time;
     }
 
+    // Update sphere glow effect
+    updateSphereGlow();
+
+    // Animate point light to follow sphere
+    pointLight.position.x = sphere.position.x * 0.5;
+    pointLight.position.y = sphere.position.y * 0.5;
+
     // Update coordinate display
     coordinateDiv.innerHTML = `
-        <b>Smart IK Mode (XY)</b><br>
-        Target: ${sphere.position.x.toFixed(2)}, ${sphere.position.y.toFixed(2)}<br>
-        Facing: ${(tx < 0) ? 'LEFT' : 'RIGHT'}<br>
-        Status: Elbow-Up Priority
+        <b>🤖 Smart IK Mode (XY)</b><br>
+        🎯 Target: ${sphere.position.x.toFixed(2)}, ${sphere.position.y.toFixed(2)}<br>
+        🔄 Facing: ${(tx < 0) ? 'LEFT' : 'RIGHT'}<br>
+        ⚡ Status: Elbow-Up Priority
     `;
 
-    renderer.render(scene, camera);
+    composer.render();
 }
 animate();
 
@@ -299,4 +406,8 @@ window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
+
+    // Update composer and bloom pass for new size
+    composer.setSize(window.innerWidth, window.innerHeight);
+    bloomPass.setSize(window.innerWidth, window.innerHeight);
 });
