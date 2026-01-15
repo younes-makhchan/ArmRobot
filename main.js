@@ -168,7 +168,7 @@ function updateConnectionStatus(status) {
 function prepareRobotData() {
     const baseDeg = Math.round(currentBaseRotation * (180 / Math.PI));
     const shoulderDeg = Math.round(currentShoulderAngle * (180 / Math.PI))+45;
-    const elbowDeg = (Math.round(currentElbowAngle * (180 / Math.PI))+90);
+    const elbowDeg = (Math.round(currentElbowAngle * (180 / Math.PI)));
     return `B${baseDeg},S${shoulderDeg},E${elbowDeg}\n`;
 }
 
